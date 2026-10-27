@@ -2,6 +2,7 @@
 2. 자동으로 키 조작 없이 좌우로 계속 이동함
 3. AutoRun 에서는 속도가 더 빠르고 좌우측 끝에서 자동 방향 전환이 되며 움직임
 4. 이때 방향키 입력이 들어오면 기존 RUN 상태로 돌아간다.
+5. AutoRun 진입 후 5초가 지나면 IDLE 상태로 돌아간다.
 
 ## 상태 다이어그램
 
@@ -14,6 +15,7 @@ stateDiagram-v2
     SLEEP --> AutoRun: A 키
     AutoRun --> AutoRun: 좌우 끝 도달 / 방향 전환
     AutoRun --> RUN: 방향키 입력
+    AutoRun --> IDLE: 5초 경과
 
     IDLE --> RUN: 방향키 입력
     IDLE --> SLEEP: 5초 동안 대기

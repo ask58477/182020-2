@@ -40,7 +40,13 @@ class Boy:
                     'trigger': 'start_auto_run',
                     'source': ['IDLE', 'RUN', 'Sleep'],
                     'dest': 'AutoRun',
-                    'after': 'reset_run_frame',
+                    'after': 'enter_auto_run',
+                },
+                {
+                    'trigger': 'stop_auto_run',
+                    'source': 'AutoRun',
+                    'dest': 'IDLE',
+                    'after': 'reset_idle',
                 },
                 {
                     'trigger': 'stop_running',
@@ -64,6 +70,7 @@ class Boy:
             auto_transitions=False,
         )
         self.idle_started_at = time.monotonic()
+        self.auto_run_started_at = time.monotonic()
 
     def update(self):
         if self.state == 'IDLE':
@@ -87,6 +94,8 @@ class Boy:
                 self.face_dir = 1
             else:
                 self.x = next_x
+            if time.monotonic() - self.auto_run_started_at >= 5:
+                self.machine.dispatch('stop_auto_run')
 
     def wake(self):
         if self.state == 'Sleep':
@@ -125,6 +134,10 @@ class Boy:
 
     def reset_run_frame(self):
         self.frame = 0
+
+    def enter_auto_run(self):
+        self.reset_run_frame()
+        self.auto_run_started_at = time.monotonic()
 
     def reset_idle(self):
         self.frame = 0
