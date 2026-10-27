@@ -5,7 +5,9 @@ from pico2d import load_image
 from transitions import Machine
 
 RUN_SPEED = 5
-AUTO_RUN_SPEED = 8
+AUTO_RUN_SPEED = 10
+AUTO_RUN_SIZE = 120
+AUTO_RUN_HALF_WIDTH = AUTO_RUN_SIZE // 2
 HALF_SPRITE_WIDTH = 50
 CANVAS_WIDTH = 800
 
@@ -77,11 +79,11 @@ class Boy:
         elif self.state == 'AutoRun':
             self.advance_frame()
             next_x = self.x + self.face_dir * AUTO_RUN_SPEED
-            if next_x >= CANVAS_WIDTH - HALF_SPRITE_WIDTH:
-                self.x = CANVAS_WIDTH - HALF_SPRITE_WIDTH
+            if next_x >= CANVAS_WIDTH - AUTO_RUN_HALF_WIDTH:
+                self.x = CANVAS_WIDTH - AUTO_RUN_HALF_WIDTH
                 self.face_dir = -1
-            elif next_x <= HALF_SPRITE_WIDTH:
-                self.x = HALF_SPRITE_WIDTH
+            elif next_x <= AUTO_RUN_HALF_WIDTH:
+                self.x = AUTO_RUN_HALF_WIDTH
                 self.face_dir = 1
             else:
                 self.x = next_x
@@ -144,9 +146,21 @@ class Boy:
 
         if self.state in ('RUN', 'AutoRun'):
             source_y = 100 if self.face_dir == 1 else 0
-            self.image.clip_draw(
-                self.frame * 100, source_y, 100, 100, self.x, self.y
-            )
+            if self.state == 'AutoRun':
+                self.image.clip_draw(
+                    self.frame * 100,
+                    source_y,
+                    100,
+                    100,
+                    self.x,
+                    self.y,
+                    AUTO_RUN_SIZE,
+                    AUTO_RUN_SIZE,
+                )
+            else:
+                self.image.clip_draw(
+                    self.frame * 100, source_y, 100, 100, self.x, self.y
+                )
             return
 
         if self.face_dir == 1:
