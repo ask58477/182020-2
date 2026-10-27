@@ -19,6 +19,8 @@ def handle_events():
             running = False
         elif event.type == SDL_KEYDOWN and event.key == SDLK_SPACE:
             boy.wake()
+        elif event.type == SDL_KEYDOWN and event.key == SDLK_a:
+            pass
         elif event.type == SDL_KEYDOWN and event.key == SDLK_LEFT:
             boy.press_direction(-1)
         elif event.type == SDL_KEYDOWN and event.key == SDLK_RIGHT:
