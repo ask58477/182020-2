@@ -5,6 +5,7 @@ from pico2d import load_image
 from transitions import Machine
 
 RUN_SPEED = 5
+AUTO_RUN_SPEED = 8
 HALF_SPRITE_WIDTH = 50
 CANVAS_WIDTH = 800
 
@@ -19,7 +20,7 @@ class Boy:
         self.image = load_image('animation_sheet.png')
         self.machine = Machine(
             model=self,
-            states=['IDLE', 'RUN', 'Sleep'],
+            states=['IDLE', 'RUN', 'Sleep', 'AutoRun'],
             transitions=[
                 {
                     'trigger': 'animate',
@@ -29,8 +30,14 @@ class Boy:
                 },
                 {
                     'trigger': 'start_running',
-                    'source': ['IDLE', 'Sleep'],
+                    'source': ['IDLE', 'Sleep', 'AutoRun'],
                     'dest': 'RUN',
+                    'after': 'reset_run_frame',
+                },
+                {
+                    'trigger': 'start_auto_run',
+                    'source': ['IDLE', 'RUN', 'Sleep'],
+                    'dest': 'AutoRun',
                     'after': 'reset_run_frame',
                 },
                 {
@@ -67,10 +74,25 @@ class Boy:
                 CANVAS_WIDTH - HALF_SPRITE_WIDTH,
                 max(HALF_SPRITE_WIDTH, self.x + self.face_dir * RUN_SPEED),
             )
+        elif self.state == 'AutoRun':
+            self.advance_frame()
+            next_x = self.x + self.face_dir * AUTO_RUN_SPEED
+            if next_x >= CANVAS_WIDTH - HALF_SPRITE_WIDTH:
+                self.x = CANVAS_WIDTH - HALF_SPRITE_WIDTH
+                self.face_dir = -1
+            elif next_x <= HALF_SPRITE_WIDTH:
+                self.x = HALF_SPRITE_WIDTH
+                self.face_dir = 1
+            else:
+                self.x = next_x
 
     def wake(self):
         if self.state == 'Sleep':
             self.machine.dispatch('wake_up')
+
+    def activate_auto_run(self):
+        if self.state != 'AutoRun':
+            self.machine.dispatch('start_auto_run')
 
     def press_direction(self, direction):
         if direction == -1:
@@ -79,7 +101,7 @@ class Boy:
             self.right_pressed = True
         self.face_dir = direction
 
-        if self.state in ('IDLE', 'Sleep'):
+        if self.state in ('IDLE', 'Sleep', 'AutoRun'):
             self.machine.dispatch('start_running')
 
     def release_direction(self, direction):
@@ -120,7 +142,7 @@ class Boy:
             )
             return
 
-        if self.state == 'RUN':
+        if self.state in ('RUN', 'AutoRun'):
             source_y = 100 if self.face_dir == 1 else 0
             self.image.clip_draw(
                 self.frame * 100, source_y, 100, 100, self.x, self.y
